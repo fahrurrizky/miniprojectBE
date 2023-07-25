@@ -1,1 +1,1 @@
-Kepada yg terhormat Bapak beliau harap dijaga tutur katanya dan lebih diperbaiki nada biacaranya.
+wes mari
