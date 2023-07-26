@@ -4,6 +4,16 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const db = require("../models");
 const User = db.User;
 
+// Helper function to get the decoded userName from the JWT token
+const getDecodedUserNameFromToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.userName;
+  } catch (err) {
+    throw new Error("Invalid authorization token");
+  }
+};
+
 const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
@@ -15,8 +25,7 @@ const uploadAvatar = async (req, res) => {
       return res.status(401).json({ error: "Missing authorization token" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userName = decoded.userName;
+    const userName = getDecodedUserNameFromToken(token);
 
     const filePath = req.file.path;
 
@@ -27,10 +36,7 @@ const uploadAvatar = async (req, res) => {
 
     return res.status(200).json({ message: "Upload avatar successful!" });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Error uploading avatar", token: error });
+    return res.status(500).json({ error: "Error uploading avatar", token: error });
   }
 };
 

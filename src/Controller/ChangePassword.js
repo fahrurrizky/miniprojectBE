@@ -7,11 +7,39 @@ const db = require("../models");
 const User = db.User;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Helper function to get the decoded username from the JWT token
+const getDecodedUsernameFromToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded.userName;
+  } catch (err) {
+    throw new Error("Invalid authorization token");
+  }
+};
+
+// Helper function to check if the current password matches the user's password
+const checkCurrentPassword = async (currentPassword, hashedPassword) => {
+  return await bcrypt.compare(currentPassword, hashedPassword);
+};
+
+// Helper function to update the user's password
+const updateUserPassword = async (userName, password) => {
+  try {
+    const user = await User.findOne({ where: { userName: userName } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await user.update({ password: hashedPassword });
+  } catch (error) {
+    throw new Error("Error updating password in the database");
+  }
+};
+
 const validateChangePass = () => {
   return [
-    body("currentPassword")
-      .notEmpty()
-      .withMessage("Current password is required"),
+    body("currentPassword").notEmpty().withMessage("Current password is required"),
     body("password")
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters long")
@@ -33,43 +61,25 @@ const changePassword = async (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
   const { currentPassword, password } = req.body;
-
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ error: "Missing authorizatidon token" });
   }
-
-  let userName;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    userName = decoded.userName;
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid authorization token" });
-  }
-
-  try {
+    const userName = getDecodedUsernameFromToken(token);
     const user = await User.findOne({ where: { userName: userName } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    const passwordMatch = await checkCurrentPassword(currentPassword, user.password);
     if (!passwordMatch) {
       return res.status(401).json({ error: "Incorrect current password" });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await user.update({ password: hashedPassword });
-
+    await updateUserPassword(userName, password);
     return res.status(200).json({ message: "Password change successful" });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Error updating password in the databases" });
+    return res.status(500).json({ error: error.message });
   }
 };
 

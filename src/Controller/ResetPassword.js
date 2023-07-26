@@ -6,6 +6,31 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const db = require("../models");
 const User = db.User;
 
+// Helper function to get the decoded username from the JWT token
+const getDecodedUsernameFromToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.userName;
+  } catch (err) {
+    throw new Error("Invalid authorization token");
+  }
+};
+
+// Helper function to update the user's password
+const updateUserPassword = async (userName, password) => {
+  try {
+    const user = await User.findOne({ where: { userName: userName } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await user.update({ password: hashedPassword });
+  } catch (error) {
+    throw new Error("Error updating password in the database");
+  }
+};
+
 const validateResetPass = () => {
   return [
     body("password")
@@ -36,29 +61,13 @@ const resetPassword = async (req, res) => {
     return res.status(401).json({ error: "Missing authorization token" });
   }
 
-  let userName;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    userName = decoded.userName;
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid authorization token" });
-  }
-
-  try {
-    const user = await User.findOne({ where: { userName: userName } });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await user.update({ password: hashedPassword });
+    const userName = getDecodedUsernameFromToken(token);
+    await updateUserPassword(userName, password);
 
     return res.status(200).json({ message: "Password reset successful" });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Error updating password in the database" });
+    return res.status(500).json({ error: error.message });
   }
 };
 

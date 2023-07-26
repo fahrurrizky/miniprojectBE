@@ -59,7 +59,6 @@ const changePhone = async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     userName = decoded.userName;
-    // console.log(userName)
 
   } catch (err) {
     return res.status(401).json({ error: "Invalid authorization token" });
@@ -74,7 +73,7 @@ const changePhone = async (req, res) => {
     if (user.phoneNumber !== currentPhone) {
       return res.status(401).json({ error: "Incorrect current phone number" });
     }
-    // console.log("sebelum update")
+
     const updatedUser = await User.update(
         {phoneNumber: newPhone },
         {where: {userName:userName}},
@@ -82,14 +81,9 @@ const changePhone = async (req, res) => {
 
     await sendPhoneChangeEmail(user.email);
 
-    return res
-      .status(200)
-      .json({ message: "Phone number change successful", updatedUser });
+    return res.status(200).json({ message: "Phone number change successful", updatedUser });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Error updating phone number in the database" });
+    return res.status(500).json({ error: "Error updating phone number in the database" });
   }
 };
 
