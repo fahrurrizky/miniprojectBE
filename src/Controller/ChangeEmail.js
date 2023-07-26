@@ -17,30 +17,25 @@ const validateChangeEmail = () => {
 };
 
 const sendEmailNotification = async (email) => {
-  console.log(email, process.env.userHotmail)
+  console.log(email, process.env.userHotmail);
   const transporter = nodemailer.createTransport({
     service: "hotmail",
-    auth: {
-      user: process.env.userHotmail,
-      pass: process.env.passHotmail,
-    },
+    auth: { user: process.env.userHotmail, pass: process.env.passHotmail },
   });
 
   const mailOptions = {
     from: process.env.userHotmail,
     to: email,
     subject: "Email Change Notification",
-    html: `
-        <html>
-          <body>
+    html: `<html>
+            <body>
             <h1>Welcome to Beeyond The Pages</h1>
             <p>Hello</p>
             <p>Your email has been successfully changed &#128536</p>
             <p>Best regards,</p>
             <p>My Bee &#128536</p>
-          </body>
-        </html>
-      `,
+            </body>
+          </html>`,
   };
   await transporter.sendMail(mailOptions);
 };
@@ -75,17 +70,17 @@ const changeEmail = async (req, res) => {
       return res.status(401).json({ error: "Incorrect current email address" });
     }
 
-    const existingUser = await User.findOne({ 
-        where: { email: newEmail } 
+    const existingUser = await User.findOne({
+      where: { email: newEmail },
     });
-    
+
     if (existingUser) {
       return res.status(400).json({ error: "Email address already exists" });
     }
 
     const updatedUser = await User.update(
       { email: newEmail },
-      { where: { userId: userId } },
+      { where: { userId: userId } }
     );
 
     await sendEmailNotification(newEmail);
@@ -93,7 +88,6 @@ const changeEmail = async (req, res) => {
     return res
       .status(200)
       .json({ message: "Email address change successful", updatedUser });
-
   } catch (error) {
     console.error(error);
     return res

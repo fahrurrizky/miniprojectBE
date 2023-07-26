@@ -31,12 +31,8 @@ const validationRules = () => {
     body("password")
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters long")
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/
-      )
-      .withMessage(
-        "Password must contain at least 1 symbol, 1 uppercase letter, and 1 number"
-      )
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/)
+      .withMessage("Password must contain at least 1 symbol, 1 uppercase letter, and 1 number")
       .notEmpty(),
     body("confirmPassword").custom((value, { req }) => {
       if (value !== req.body.password) {
@@ -44,7 +40,7 @@ const validationRules = () => {
       }
       return true;
     }),
-    
+
     body("phoneNumber")
       .isLength({ max: 12 })
       .withMessage("Phone number cannot exceed 12 characters")
@@ -79,29 +75,19 @@ const register = async (req, res) => {
       from: process.env.userHotmail,
       to: req.body.email,
       subject: "New Account Registration",
-      html: `
-        <html>
-          <body>
-            <h1>Welcome to Beeyond The Pages</h1>
-            <p>Hello</p>
-            <p>You have successfully registered, the next step is to verify by clicking the button below:</p>
-            <a href="http://localhost:8000/verify/${token}"
-            style="
-              display: inline-block;
-              text-decoration: solid;
-              padding: 13px;
-              background-color: #08807a;
-              border: #000000 solid 2px;
-              color: #000000;
-              font-size: 17px;
-              border-radius: 4px;"
-              >Verification</a>
-            <p>Thank you, Welcome to Beeyond The Pages</p>
-            <p>Best regards</p>
-            <p>My Bee &#128536</p>
-          </body>
-        </html>
-      `,
+      html: `<html>
+              <body>
+                <h1>Welcome to Beeyond The Pages</h1>
+                <p>Hello</p>
+                <p>You have successfully registered, the next step is to verify by clicking the button below:</p>
+                <a href="http://localhost:8000/verify/${token}"
+                style="display: inline-block; text-decoration: solid; padding: 13px; background-color: #08807a; border: #FFFFFF solid 2px; color: #FFFFFF; font-size: 17px; border-radius: 4px;">
+                Verification</a>
+                <p>Thank you, Welcome to Beeyond The Pages</p>
+                <p>Best regards</p>
+                <p>My Bee &#128536</p>
+              </body>
+            </html>`,
     };
 
     await transporter.sendMail(mailOptions);

@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
       });
     cb(null, `${defaultPath}/${file.fieldname}`);
   },
-
+  
   filename: (req, file, cb) => {
     cb(
       null,
@@ -41,8 +41,23 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-exports.multerUpload = multer({
+const multerUpload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: maxSize,
+  limits: { fileSize: maxSize },
 });
+
+// Custom error handler middleware
+const uploadErrorHandler = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ error: "File size exceeds the limit of 1MB" });
+    }
+  } else if (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  next();
+};
+
+exports.multerUpload = multerUpload;
+exports.uploadErrorHandler = uploadErrorHandler;

@@ -72,7 +72,7 @@ const blogController = {
 
     try {
       const blog = await Blog.findAll({
-        attributes: { exclude: ["countryId"] },
+        attributes: { exclude: ["userId","countryId","categoryId","Category","Country"] },
         where: whereClause,
         include: [{ model: db.Category }, { model: db.Country }],
         order: [["createdAt", orderBy || "DESC"]],

@@ -1,6 +1,6 @@
 const express = require("express");
 const { verifyToken } = require("../middleware/verify");
-const { multerUpload } = require("../middleware/multer");
+const { multerUpload, uploadErrorHandler } = require("../middleware/multer");
 const { register, validationRules } = require("../Controller/Register");
 const verify = require("../Controller/Verify");
 const { validationLogin, login } = require("../Controller/Login");
@@ -24,6 +24,6 @@ authRouter.patch("/changepass", validateChangePass(), changePassword);
 authRouter.patch("/changeusername", validateChangeUsername(), changeUsername);
 authRouter.patch("/changephone", validateChangePhone(), changePhone);
 authRouter.patch("/changeemail", validateChangeEmail(), changeEmail);
-authRouter.post("/changeavatar", multerUpload.single("avatars"), uploadAvatar);
+authRouter.post("/changeavatar", multerUpload.single("avatars"), uploadErrorHandler, uploadAvatar);
 
 module.exports = authRouter;

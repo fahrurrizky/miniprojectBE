@@ -1,6 +1,6 @@
 const express = require("express");
 const { verifyToken } = require("../middleware/verify");
-const { multerUpload } = require("../middleware/multer");
+const { multerUpload, uploadErrorHandler } = require("../middleware/multer");
 const blogController = require("../Controller/Create-Get-Blog");
 
 const blogRouter = express.Router();
@@ -10,6 +10,7 @@ blogRouter.post(
   "/create",
   verifyToken,
   multerUpload.single("blog"),
+  uploadErrorHandler,
   blogController.createBlog
 );
 

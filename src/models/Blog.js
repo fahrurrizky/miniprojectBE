@@ -44,6 +44,7 @@ Blog.init(
     },
     content: {
       type: DataTypes.TEXT,
+      validate: {len:[0,500]},
     },
     video: {
       type: DataTypes.STRING(255),
